@@ -488,13 +488,14 @@
       listContainer.innerHTML = '';
       const items = Object.values(transactions).sort((a, b) => b.timestamp - a.timestamp);
 
-      let totalIncome = 0;
-      let totalExpense = 0;
+      let totalIncomeCents = 0;
+      let totalExpenseCents = 0;
 
       items.forEach(tx => {
         const amt = parseFloat(tx.amount) || 0;
-        if (tx.type === 'income') totalIncome += amt;
-        else totalExpense += amt;
+        const amtCents = Math.round(amt * 100);
+        if (tx.type === 'income') totalIncomeCents += amtCents;
+        else totalExpenseCents += amtCents;
 
         const el = document.createElement('div');
         el.className = 'tx-item';
@@ -508,21 +509,25 @@
           </div>
           <div style="display: flex; align-items: center; gap: 14px;">
             <div class="tx-amount-${tx.type}">${tx.type === 'income' ? '+' : '-'}€${amt.toFixed(2)}</div>
-            <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="deleteTx('${tx.soul}')"><i class="ti ti-trash"></i></button>
+            <button class="btn btn-secondary" style="padding: 4px 8px;" onclick="deleteTx('${escapeJs(tx.soul)}')"><i class="ti ti-trash"></i></button>
           </div>
         `;
         listContainer.appendChild(el);
       });
 
-      const balance = totalIncome - totalExpense;
-      document.getElementById('val-balance').textContent = `€${balance.toFixed(2)}`;
-      document.getElementById('val-income').textContent = `+€${totalIncome.toFixed(2)}`;
-      document.getElementById('val-expense').textContent = `-€${totalExpense.toFixed(2)}`;
+      const balanceCents = totalIncomeCents - totalExpenseCents;
+      document.getElementById('val-balance').textContent = `€${(balanceCents / 100).toFixed(2)}`;
+      document.getElementById('val-income').textContent = `+€${(totalIncomeCents / 100).toFixed(2)}`;
+      document.getElementById('val-expense').textContent = `-€${(totalExpenseCents / 100).toFixed(2)}`;
       document.getElementById('tx-count').textContent = `${items.length} items`;
     }
 
     function escapeHtml(str) {
       return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escapeJs(str) {
+      return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     }
 
     window.login = login;
